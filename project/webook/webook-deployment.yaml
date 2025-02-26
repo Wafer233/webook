@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webook-main
+  labels:
+    app: webook-main
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webook-main
+  template:
+    metadata:
+      name: webook-main
+      labels:
+        app: webook-main
+    spec:
+      containers:
+        - name: webook-main
+          image: wafer233/webook:v0.0.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              protocol: TCP
+      restartPolicy: Always
+      
