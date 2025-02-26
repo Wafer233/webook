@@ -12,6 +12,7 @@ type ArticleService interface {
 	Publish(ctx context.Context, art domain.Article) (int64, error)
 	PublishV1(ctx context.Context, art domain.Article) (int64, error)
 	Withdraw(ctx context.Context, art domain.Article) error
+	List(uid int64, offset int, limit int)
 }
 
 type articleService struct {
@@ -66,24 +67,6 @@ func (a *articleService) PublishV1(ctx context.Context, art domain.Article) (int
 	return id, err
 }
 
-//for i := 0; i < 3; i++ {
-//	// 我可能线上库已经有数据了
-//	// 也可能没有
-//	id, err = a.readRepo.Save(ctx, art)
-//	if err != nil {
-//		// 多接入一些 tracing 的工具
-//		a.log.Error("fail to ",
-//			logger.Int64("aid", art.Id),
-//			logger.Error(err))
-//	} else {
-//		return id, nil
-//	}
-//}
-//a.l.Error("保存到制作库成功但是到线上库失败，重试耗尽",
-//	logger.Int64("aid", art.Id),
-//	logger.Error(err))
-//return id, errors.New("保存到线上库失败，重试次数耗尽")
-
 func NewArticleService(repo repository.ArticleRepository) ArticleService {
 	return &articleService{
 		repo: repo,
@@ -107,3 +90,5 @@ func (a *articleService) Save(ctx context.Context, art domain.Article) (int64, e
 	}
 	return a.repo.Create(ctx, art)
 }
+
+func (a *articleService) SaveV1(ctx context.Context, art domain.Article) (int64, error) {}

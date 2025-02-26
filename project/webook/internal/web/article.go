@@ -27,6 +27,12 @@ func (handler *ArticleHandler) RegisterRoutes(server *gin.Engine) {
 	group.POST("withdraw", handler.Withdraw)
 	group.POST("edit", handler.Edit)
 	group.POST("publish", handler.Publish)
+	//group.POST("list", ginx.WrapBodyAndToken[ListReq, UserClaims](handler.List))
+}
+
+type ListReq struct {
+	Offset int `json:"offset"`
+	Limit  int `json:"limit"`
 }
 
 func (handler *ArticleHandler) Withdraw(ctx *gin.Context) {
@@ -146,6 +152,13 @@ func (handler *ArticleHandler) Edit(ctx *gin.Context) {
 		Data: id,
 	})
 }
+
+//func (handler *ArticleHandler) List(ctx *gin.Context, req ListReq, uc UserClaims) (Result, error) {
+//	//res, err := handler.svc.List(uc.Uid, req.Offset, req.Limit)
+//	//if err != nil {
+//
+//	//}
+//}
 
 type Article struct {
 	Title   string `json:"title"`
