@@ -25,6 +25,12 @@ type articleService struct {
 	log logger.LoggerV1
 }
 
+func (a *articleService) List(uid int64, offset int, limit int) {
+	//TODO implement me
+
+	panic("implement me")
+}
+
 func (a *articleService) Withdraw(ctx context.Context, art domain.Article) error {
 	return a.repo.SyncStatus(ctx, art.Id, art.Author.Id, domain.ArticleStatusPrivate)
 }
@@ -90,5 +96,3 @@ func (a *articleService) Save(ctx context.Context, art domain.Article) (int64, e
 	}
 	return a.repo.Create(ctx, art)
 }
-
-func (a *articleService) SaveV1(ctx context.Context, art domain.Article) (int64, error) {}
