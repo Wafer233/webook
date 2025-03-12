@@ -9,7 +9,7 @@ import (
 func main() {
 	server := startup.InitWebServer()
 	server.GET("hello", func(c *gin.Context) {
-		c.String(http.StatusOK, "hello world me")
+		c.String(http.StatusOK, "hello world")
 	})
 	server.Run(":8080")
 
