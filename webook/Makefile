@@ -1,4 +1,9 @@
-.PHONY: mock
+docker:
+	@rm webook || true
+	@GOOS=linux GOARCH=arm go build -tags=k8s -o webook .
+	@docker rmi  wafer233/webook:v0.0.1 . || true
+	@docker build -t wafer233/webook:v0.0.1 .
+
 mock:
 	@#mockgen -source=./webook/internal/service/user.go -package=svcmocks -destination=./webook/internal/service/mocks/user.mock.go
 	@#mockgen -source=./webook/internal/service/code.go -package=svcmocks -destination=./webook/internal/service/mocks/code.mock.go
@@ -13,3 +18,6 @@ mock:
 	@#mockgen -source=./webook/internal/repository/cache/user.go -package=cachemocks -destination=./webook/internal/repository/cache/mocks/user.mock.go
 	@#mockgen -source=./webook/internal/repository/cache/code.go -package=cachemocks -destination=./webook/internal/repository/cache/mocks/code.mock.go
 	@#mockgen -source=./webook/pkg/limiter/types.go -package=limitermocks -destination=./webook/pkg/limiter/mocks/limiter.mock.go
+
+
+
