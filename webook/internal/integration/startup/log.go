@@ -1,7 +1,7 @@
 package startup
 
 import (
-	"project/webook/pkg/logger"
+	"webook/pkg/logger"
 )
 
 func InitLogger() logger.LoggerV1 {

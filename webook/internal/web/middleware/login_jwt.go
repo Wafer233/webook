@@ -5,9 +5,9 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"log"
 	"net/http"
-	"project/webook/internal/web"
 	"strings"
 	"time"
+	"webook/internal/web"
 )
 
 type LoginJWTMiddlewareBuilder struct {

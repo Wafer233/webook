@@ -2,7 +2,7 @@ package ginx
 
 import (
 	"github.com/gin-gonic/gin"
-	"project/webook/pkg/ginx/jwt"
+	"webook/pkg/ginx/jwt"
 )
 
 func WrapReq[T any](fn func(ctx *gin.Context, req T, uc jwt.UserClaims) (Result, error)) gin.HandlerFunc {

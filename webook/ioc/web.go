@@ -4,11 +4,11 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
-	"project/webook/internal/web"
-	"project/webook/internal/web/middleware"
-	"project/webook/pkg/ratelimit"
 	"strings"
 	"time"
+	"webook/internal/web"
+	"webook/internal/web/middleware"
+	"webook/pkg/ratelimit"
 )
 
 // articleHdl *web.ArticleHandler

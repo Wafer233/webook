@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	"project/webook/internal/domain"
-	"project/webook/internal/repository/cache"
-	"project/webook/internal/repository/dao"
+	"webook/internal/domain"
+	"webook/internal/repository/cache"
+	"webook/internal/repository/dao"
 )
 
 var (

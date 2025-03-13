@@ -1,11 +1,24 @@
 package domain
 
+import "time"
+
 type Article struct {
 	Id      int64
 	Title   string
 	Content string
 	Author  Author
 	Status  ArticleStatus
+	Ctime   time.Time
+	Utime   time.Time
+}
+
+func (a Article) Abstract() string {
+	// 摘要我们取前几句。
+	cs := []rune(a.Content)
+	if len(cs) < 100 {
+		return a.Content
+	}
+	return a.Content[:100]
 }
 
 const (

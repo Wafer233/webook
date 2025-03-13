@@ -5,11 +5,11 @@ import (
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"project/webook/internal/domain"
-	"project/webook/internal/repository"
-	repov1mocks "project/webook/internal/repository/mocks"
-	"project/webook/pkg/logger"
 	"testing"
+	"webook/internal/domain"
+	"webook/internal/repository"
+	repov1mocks "webook/internal/repository/mocks"
+	"webook/pkg/logger"
 )
 
 func Test_articleService_Publish(t *testing.T) {

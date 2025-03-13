@@ -10,11 +10,11 @@ import (
 	"go.uber.org/mock/gomock"
 	"net/http"
 	"net/http/httptest"
-	"project/webook/internal/domain"
-	"project/webook/internal/service"
-	svcmock "project/webook/internal/service/mocks"
-	"project/webook/pkg/logger"
 	"testing"
+	"webook/internal/domain"
+	"webook/internal/service"
+	svcmock "webook/internal/service/mocks"
+	"webook/pkg/logger"
 )
 
 func TestArticleHandler_Publish(t *testing.T) {

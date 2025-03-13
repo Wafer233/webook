@@ -2,7 +2,7 @@ package startup
 
 import (
 	"github.com/redis/go-redis/v9"
-	"project/webook/config"
+	"webook/config"
 )
 
 func InitRedis() redis.Cmdable {

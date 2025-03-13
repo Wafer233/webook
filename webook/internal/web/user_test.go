@@ -9,10 +9,10 @@ import (
 	gomock "go.uber.org/mock/gomock"
 	"net/http"
 	"net/http/httptest"
-	"project/webook/internal/domain"
-	"project/webook/internal/service"
-	svcmock "project/webook/internal/service/mocks"
 	"testing"
+	"webook/internal/domain"
+	"webook/internal/service"
+	svcmock "webook/internal/service/mocks"
 )
 
 func TestUserHandler_SignUp(t *testing.T) {

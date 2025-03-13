@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"project/webook/internal/domain"
-	"project/webook/internal/repository"
-	"project/webook/pkg/logger"
+	"webook/internal/domain"
+	"webook/internal/repository"
+	"webook/pkg/logger"
 )
 
 type ArticleService interface {
@@ -12,7 +12,8 @@ type ArticleService interface {
 	Publish(ctx context.Context, art domain.Article) (int64, error)
 	PublishV1(ctx context.Context, art domain.Article) (int64, error)
 	Withdraw(ctx context.Context, art domain.Article) error
-	List(uid int64, offset int, limit int)
+	List(ctx context.Context, uid int64, offset int, limit int) ([]domain.Article, error)
+	GetById(ctx context.Context, id int64) (domain.Article, error)
 }
 
 type articleService struct {
@@ -25,14 +26,27 @@ type articleService struct {
 	log logger.LoggerV1
 }
 
-func (a *articleService) List(uid int64, offset int, limit int) {
-	//TODO implement me
-
-	panic("implement me")
+func NewArticleService(repo repository.ArticleRepository) ArticleService {
+	return &articleService{
+		repo: repo,
+	}
 }
 
-func (a *articleService) Withdraw(ctx context.Context, art domain.Article) error {
-	return a.repo.SyncStatus(ctx, art.Id, art.Author.Id, domain.ArticleStatusPrivate)
+func NewArticleServiceV1(authRepo repository.ArticleAuthorRepository, readRepo repository.ArticleReaderRepository, log logger.LoggerV1) ArticleService {
+	return &articleService{
+		authRepo: authRepo,
+		readRepo: readRepo,
+		log:      log,
+	}
+}
+
+func (a *articleService) Save(ctx context.Context, art domain.Article) (int64, error) {
+	art.Status = domain.ArticleStatusUnpublished
+	if art.Id > 0 {
+		err := a.repo.Update(ctx, art)
+		return art.Id, err
+	}
+	return a.repo.Create(ctx, art)
 }
 
 func (a *articleService) Publish(ctx context.Context, art domain.Article) (int64, error) {
@@ -73,26 +87,14 @@ func (a *articleService) PublishV1(ctx context.Context, art domain.Article) (int
 	return id, err
 }
 
-func NewArticleService(repo repository.ArticleRepository) ArticleService {
-	return &articleService{
-		repo: repo,
-	}
+func (a *articleService) Withdraw(ctx context.Context, art domain.Article) error {
+	return a.repo.SyncStatus(ctx, art.Id, art.Author.Id, domain.ArticleStatusPrivate)
 }
 
-func NewArticleServiceV1(authRepo repository.ArticleAuthorRepository,
-	readRepo repository.ArticleReaderRepository, log logger.LoggerV1) ArticleService {
-	return &articleService{
-		authRepo: authRepo,
-		readRepo: readRepo,
-		log:      log,
-	}
+func (a *articleService) List(ctx context.Context, uid int64, offset int, limit int) ([]domain.Article, error) {
+	return a.repo.List(ctx, uid, offset, limit)
 }
 
-func (a *articleService) Save(ctx context.Context, art domain.Article) (int64, error) {
-	art.Status = domain.ArticleStatusUnpublished
-	if art.Id > 0 {
-		err := a.repo.Update(ctx, art)
-		return art.Id, err
-	}
-	return a.repo.Create(ctx, art)
+func (svc *articleService) GetById(ctx context.Context, id int64) (domain.Article, error) {
+	return svc.repo.GetByID(ctx, id)
 }

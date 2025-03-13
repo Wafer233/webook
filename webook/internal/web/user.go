@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
-	"project/webook/internal/domain"
-	"project/webook/internal/service"
 	"time"
+	"webook/internal/domain"
+	"webook/internal/service"
 )
 
 const (

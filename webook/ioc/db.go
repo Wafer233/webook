@@ -3,8 +3,8 @@ package ioc
 import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"project/webook/config"
-	"project/webook/internal/repository/dao"
+	"webook/config"
+	"webook/internal/repository/dao"
 )
 
 func InitDB() *gorm.DB {

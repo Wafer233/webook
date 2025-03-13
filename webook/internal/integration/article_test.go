@@ -10,11 +10,11 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"net/http/httptest"
-	"project/webook/internal/domain"
-	"project/webook/internal/integration/startup"
-	"project/webook/internal/repository/dao"
-	"project/webook/internal/web"
 	"testing"
+	"webook/internal/domain"
+	"webook/internal/integration/startup"
+	"webook/internal/repository/dao"
+	"webook/internal/web"
 )
 
 type ArticleTestSuite struct {

@@ -11,8 +11,8 @@ package repov1mocks
 
 import (
 	context "context"
-	domain "project/webook/internal/domain"
 	reflect "reflect"
+	domain "webook/internal/domain"
 
 	gomock "go.uber.org/mock/gomock"
 )

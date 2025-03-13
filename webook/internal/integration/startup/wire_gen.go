@@ -9,12 +9,12 @@ package startup
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
-	"project/webook/internal/repository"
-	"project/webook/internal/repository/cache"
-	"project/webook/internal/repository/dao"
-	"project/webook/internal/service"
-	"project/webook/internal/web"
-	"project/webook/ioc"
+	"webook/internal/repository"
+	"webook/internal/repository/cache"
+	"webook/internal/repository/dao"
+	"webook/internal/service"
+	"webook/internal/web"
+	"webook/ioc"
 )
 
 // Injectors from wire.go:

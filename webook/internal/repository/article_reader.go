@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"project/webook/internal/domain"
+	"webook/internal/domain"
 )
 
 type ArticleReaderRepository interface {

@@ -5,8 +5,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
-	"project/webook/pkg/logger"
 	"strconv"
+	"webook/pkg/logger"
 )
 
 // 这个东西，放到你们的 ginx 插件库里面去

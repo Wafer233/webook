@@ -1,9 +1,10 @@
-module project/webook
+module webook
 
 go 1.23.1
 
 require (
 	github.com/dlclark/regexp2 v1.11.4
+	github.com/ecodeclub/ekit v0.0.9
 	github.com/gin-contrib/cors v1.7.3
 	github.com/gin-contrib/sessions v1.0.2
 	github.com/gin-gonic/gin v1.10.0
@@ -54,7 +55,6 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.62.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
