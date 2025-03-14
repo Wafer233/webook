@@ -10,10 +10,12 @@ import (
 type ArticleService interface {
 	Save(ctx context.Context, art domain.Article) (int64, error)
 	Publish(ctx context.Context, art domain.Article) (int64, error)
-	PublishV1(ctx context.Context, art domain.Article) (int64, error)
 	Withdraw(ctx context.Context, art domain.Article) error
-	List(ctx context.Context, uid int64, offset int, limit int) ([]domain.Article, error)
+	GetByAuthor(ctx context.Context, uid int64, offset int, limit int) ([]domain.Article, error)
 	GetById(ctx context.Context, id int64) (domain.Article, error)
+	GetPubById(ctx context.Context, id int64) (domain.Article, error)
+
+	//PublishV1(ctx context.Context, art domain.Article) (int64, error)
 }
 
 type articleService struct {
@@ -54,47 +56,51 @@ func (a *articleService) Publish(ctx context.Context, art domain.Article) (int64
 	return a.repo.Sync(ctx, art)
 }
 
-func (a *articleService) PublishV1(ctx context.Context, art domain.Article) (int64, error) {
-	var id = art.Id
-	var err error
-
-	if art.Id > 0 {
-		err = a.authRepo.Update(ctx, art)
-	} else {
-		id, err = a.authRepo.Create(ctx, art)
-	}
-	if err != nil {
-		return 0, err
-	}
-	art.Id = id
-
-	for i := 0; i < 3; i++ {
-		id, err = a.readRepo.Save(ctx, art)
-		if err == nil {
-			break
-		}
-		a.log.Error("save fail for reader db",
-			logger.Int64("article_id", art.Id),
-			logger.Error(err))
-	}
-	//
-	if err != nil {
-		a.log.Error("ALL save fail for reader db",
-			logger.Field{Key: "article_id", Value: art.Id},
-			logger.Field{Key: "error", Value: err})
-	}
-
-	return id, err
-}
-
 func (a *articleService) Withdraw(ctx context.Context, art domain.Article) error {
 	return a.repo.SyncStatus(ctx, art.Id, art.Author.Id, domain.ArticleStatusPrivate)
 }
 
-func (a *articleService) List(ctx context.Context, uid int64, offset int, limit int) ([]domain.Article, error) {
-	return a.repo.List(ctx, uid, offset, limit)
+func (a *articleService) GetByAuthor(ctx context.Context, uid int64, offset int, limit int) ([]domain.Article, error) {
+	return a.repo.GetByAuthor(ctx, uid, offset, limit)
 }
 
-func (svc *articleService) GetById(ctx context.Context, id int64) (domain.Article, error) {
-	return svc.repo.GetByID(ctx, id)
+func (a *articleService) GetById(ctx context.Context, id int64) (domain.Article, error) {
+	return a.repo.GetByID(ctx, id)
 }
+
+func (a *articleService) GetPubById(ctx context.Context, id int64) (domain.Article, error) {
+	return a.repo.GetPubById(ctx, id)
+}
+
+//func (a *articleService) PublishV1(ctx context.Context, art domain.Article) (int64, error) {
+//	var id = art.Id
+//	var err error
+//
+//	if art.Id > 0 {
+//		err = a.authRepo.Update(ctx, art)
+//	} else {
+//		id, err = a.authRepo.Create(ctx, art)
+//	}
+//	if err != nil {
+//		return 0, err
+//	}
+//	art.Id = id
+//
+//	for i := 0; i < 3; i++ {
+//		id, err = a.readRepo.Save(ctx, art)
+//		if err == nil {
+//			break
+//		}
+//		a.log.Error("save fail for reader db",
+//			logger.Int64("article_id", art.Id),
+//			logger.Error(err))
+//	}
+//	//
+//	if err != nil {
+//		a.log.Error("ALL save fail for reader db",
+//			logger.Field{Key: "article_id", Value: art.Id},
+//			logger.Field{Key: "error", Value: err})
+//	}
+//
+//	return id, err
+//}

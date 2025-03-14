@@ -27,3 +27,7 @@ func Error(err error) Field {
 		Value: err,
 	}
 }
+
+func Int(key string, val int) Field {
+	return Field{Key: key, Value: val}
+}

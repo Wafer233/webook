@@ -10,9 +10,7 @@ type ReaderDAO interface {
 	UpsertV2(ctx context.Context, art PublishedArticle) error
 }
 
-type PublishedArticle struct {
-	Article
-}
+type PublishedArticle Article
 
 func NewReaderDAO(db *gorm.DB) ReaderDAO {
 	panic("implement me")

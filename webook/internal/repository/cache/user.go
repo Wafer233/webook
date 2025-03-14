@@ -9,8 +9,6 @@ import (
 	"webook/internal/domain"
 )
 
-var ErrKeyNotExit = redis.Nil
-
 type UserCache interface {
 	Get(ctx context.Context, id int64) (domain.User, error)
 	Set(ctx context.Context, u domain.User) error

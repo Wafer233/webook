@@ -3,7 +3,6 @@ package dao
 import (
 	"context"
 	"errors"
-	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"time"
@@ -11,13 +10,14 @@ import (
 
 type ArticleDAO interface {
 	Insert(ctx context.Context, art Article) (int64, error)
-	UpdateById(ctx context.Context, article Article) error
-	Sync(ctx context.Context, article Article) (int64, error)
-	Upsert(ctx context.Context, article PublishedArticle) error
-	SyncStatus(ctx context.Context, id int64, aid int64, status uint8) error
+	UpdateById(ctx context.Context, art Article) error
+	Sync(ctx context.Context, art Article) (int64, error)
+	SyncStatus(ctx context.Context, uid int64, aid int64, stat uint8) error
 	GetByAuthor(ctx context.Context, uid int64, offset int, limit int) ([]Article, error)
 	GetById(ctx context.Context, id int64) (Article, error)
+	GetPubById(ctx context.Context, id int64) (PublishedArticle, error)
 	//Transaction(ctx context.Context, bizFunc func(txDAO ArticleDAO) error) error
+	//Upsert(ctx context.Context, article PublishedArticle) error
 }
 
 type Article struct {
@@ -78,74 +78,72 @@ func (dao *GORMArticleDAO) UpdateById(ctx context.Context, art Article) error {
 
 func (dao *GORMArticleDAO) Sync(ctx context.Context, art Article) (int64, error) {
 	var id = art.Id
-
-	//操作两个dao
-	//tx -> transaction
-	err := dao.db.Transaction(func(tx *gorm.DB) error {
-
-		var err error
-		txDAO := NewGORMArticleDAO(tx)
+	err := dao.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var (
+			err error
+		)
+		dao := NewGORMArticleDAO(tx)
 		if id > 0 {
-			err = txDAO.UpdateById(ctx, art)
+			err = dao.UpdateById(ctx, art)
 		} else {
-			id, err = txDAO.Insert(ctx, art)
+			id, err = dao.Insert(ctx, art)
 		}
 		if err != nil {
 			return err
 		}
-		return txDAO.Upsert(ctx, PublishedArticle{Article: art})
-
+		art.Id = id
+		now := time.Now().UnixMilli()
+		pubArt := PublishedArticle(art)
+		pubArt.Ctime = now
+		pubArt.Utime = now
+		err = tx.Clauses(clause.OnConflict{
+			// 对MySQL不起效，但是可以兼容别的方言
+			// INSERT xxx ON DUPLICATE KEY SET `title`=?
+			// 别的方言：
+			// sqlite INSERT XXX ON CONFLICT DO UPDATES WHERE
+			Columns: []clause.Column{{Name: "id"}},
+			DoUpdates: clause.Assignments(map[string]interface{}{
+				"title":   pubArt.Title,
+				"content": pubArt.Content,
+				"utime":   now,
+				"status":  pubArt.Status,
+			}),
+		}).Create(&pubArt).Error
+		return err
 	})
 	return id, err
 }
 
-func (dao *GORMArticleDAO) Upsert(ctx context.Context, article PublishedArticle) error {
+func (dao *GORMArticleDAO) SyncStatus(ctx context.Context, uid int64, aid int64, stat uint8) error {
 	now := time.Now().UnixMilli()
-	article.Ctime = now
-	article.Utime = now
-	err := dao.db.WithContext(ctx).Clauses(clause.OnConflict{
-		DoUpdates: clause.Assignments(map[string]interface{}{
-			"title":   article.Title,
-			"content": article.Content,
-			"utime":   now,
-			"status":  article.Status,
-		}),
-	}).Create(&article).Error
-	return err
-}
-
-func (dao *GORMArticleDAO) SyncStatus(ctx context.Context, id int64, aid int64, status uint8) error {
 	return dao.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		now := time.Now()
 		res := tx.Model(&Article{}).
-			Where("id = ? AND author_id = ?", id, aid).
+			Where("id = ? and author_id = ?", uid, aid).
 			Updates(map[string]any{
-				"status": status,
 				"utime":  now,
+				"status": stat,
 			})
 		if res.Error != nil {
 			return res.Error
 		}
 		if res.RowsAffected != 1 {
-			return fmt.Errorf("withdraw no privacy, id= %d, aid= %d", id, aid)
+			return errors.New("ID 不对或者创作者不对")
 		}
-		return tx.Model(&Article{}).
-			Where("id = ? AND author_id = ?", id, aid).
+		return tx.Model(&PublishedArticle{}).
+			Where("id = ?", uid).
 			Updates(map[string]any{
-				"status": status,
 				"utime":  now,
+				"status": stat,
 			}).Error
-
 	})
 }
 
-func (dao *GORMArticleDAO) GetByAuthor(ctx context.Context, author int64, offset int, limit int) ([]Article, error) {
+func (dao *GORMArticleDAO) GetByAuthor(ctx context.Context, uid int64, offset int, limit int) ([]Article, error) {
 	var arts []Article
 	err := dao.db.WithContext(ctx).
-		Model(&Article{}).
-		Where("author = ?", author).
-		Offset(offset).
-		Limit(limit).
+		Where("author_id = ?", uid).
+		Offset(offset).Limit(limit).
+		// a ASC, B DESC
 		Order("utime DESC").
 		Find(&arts).Error
 	return arts, err
@@ -153,8 +151,17 @@ func (dao *GORMArticleDAO) GetByAuthor(ctx context.Context, author int64, offset
 
 func (dao *GORMArticleDAO) GetById(ctx context.Context, id int64) (Article, error) {
 	var art Article
-	err := dao.db.WithContext(ctx).Where("id=?", id).First(&art).Error
+	err := dao.db.WithContext(ctx).
+		Where("id = ?", id).First(&art).Error
 	return art, err
+}
+
+func (dao *GORMArticleDAO) GetPubById(ctx context.Context, id int64) (PublishedArticle, error) {
+	var res PublishedArticle
+	err := dao.db.WithContext(ctx).
+		Where("id = ?", id).
+		First(&res).Error
+	return res, err
 }
 
 //func (dao *GORMArticleDAO) Transaction(ctx context.Context, bizFunc func(txDAO ArticleDAO) error) error {
@@ -163,4 +170,19 @@ func (dao *GORMArticleDAO) GetById(ctx context.Context, id int64) (Article, erro
 //		return bizFunc(txDAO)
 //
 //	})
+//}
+
+//func (dao *GORMArticleDAO) Upsert(ctx context.Context, article PublishedArticle) error {
+//	now := time.Now().UnixMilli()
+//	article.Ctime = now
+//	article.Utime = now
+//	err := dao.db.WithContext(ctx).Clauses(clause.OnConflict{
+//		DoUpdates: clause.Assignments(map[string]interface{}{
+//			"title":   article.Title,
+//			"content": article.Content,
+//			"utime":   now,
+//			"status":  article.Status,
+//		}),
+//	}).Create(&article).Error
+//	return err
 //}

@@ -9,28 +9,21 @@ type Article struct {
 }
 
 type ArticleVO struct {
-	Id    int64  `json:"id"`
-	Title string `json:"title"`
-	// 摘要
-	Abstract string `json:"abstract"`
-	// 内容
-	Content string `json:"content"`
-	// 状态这个东西，可以是前端来处理，也可以是后端来处理
-	// 0 -> unknown -> 未知状态
-	// 1 -> 未发表
-	Status uint8  `json:"status"`
-	Author string `json:"author"`
-	// 计数
-	ReadCnt    int64 `json:"read_cnt"`
-	LikeCnt    int64 `json:"like_cnt"`
-	CollectCnt int64 `json:"collect_cnt"`
+	Id         int64  `json:"id,omitempty"`
+	Title      string `json:"title,omitempty"`
+	Abstract   string `json:"abstract,omitempty"`
+	Content    string `json:"content,omitempty"`
+	AuthorId   int64  `json:"authorId,omitempty"`
+	AuthorName string `json:"authorName,omitempty"`
+	Status     uint8  `json:"status,omitempty"`
+	Ctime      string `json:"ctime,omitempty"`
+	Utime      string `json:"utime,omitempty"`
 
-	// 我个人有没有收藏，有没有点赞
-	Liked     bool `json:"liked"`
-	Collected bool `json:"collected"`
-
-	Ctime string `json:"ctime"`
-	Utime string `json:"utime"`
+	ReadCnt    int64 `json:"readCnt"`
+	LikeCnt    int64 `json:"likeCnt"`
+	CollectCnt int64 `json:"collectCnt"`
+	Liked      bool  `json:"liked"`
+	Collected  bool  `json:"collected"`
 }
 
 type ArticleReq struct {
