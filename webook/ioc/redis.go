@@ -7,7 +7,6 @@ import (
 
 func InitRedis() redis.Cmdable {
 	redisClient := redis.NewClient(&redis.Options{
-		//Addr: "webook-redis:6381",
 		Addr: config.Config.Redis.Addr,
 	})
 

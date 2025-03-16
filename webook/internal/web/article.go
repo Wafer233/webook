@@ -23,11 +23,12 @@ type ArticleHandler struct {
 	log logger.LoggerV1
 }
 
-func NewArticleHandler(svc service.ArticleService, log logger.LoggerV1) *ArticleHandler {
+func NewArticleHandler(svc service.ArticleService, interSvc service.InteractiveService, log logger.LoggerV1) *ArticleHandler {
 	return &ArticleHandler{
-		svc: svc,
-		log: log,
-		biz: "articles",
+		svc:      svc,
+		log:      log,
+		interSvc: interSvc,
+		biz:      "articles",
 	}
 }
 
@@ -279,19 +280,20 @@ func (handler *ArticleHandler) PubDetail(ctx *gin.Context) {
 		art  domain.Article
 		intr domain.Interactive
 	)
-
-	eg.Go(func() error {
-		var er error
-		art, er = handler.svc.GetPubById(ctx, id)
-		return er
-	})
-
 	uc := ctx.MustGet("user").(UserClaims)
 	eg.Go(func() error {
+
 		var er error
-		intr, er = handler.interSvc.Get(ctx, handler.biz, id, uc.Uid)
+		art, er = handler.svc.GetPubById(ctx, id, uc.Uid)
 		return er
 	})
+
+	//uc := ctx.MustGet("user").(UserClaims)
+	//eg.Go(func() error {
+	//	var er error
+	//	intr, er = handler.interSvc.Get(ctx, handler.biz, id, uc.Uid)
+	//	return er
+	//})
 
 	// 等待结果
 	err = eg.Wait()
@@ -377,28 +379,21 @@ func (handler *ArticleHandler) Like(c *gin.Context) {
 
 func (handler *ArticleHandler) Collect(ctx *gin.Context) {
 	type Req struct {
-		Id int64 `json:"id"`
-		// true 是点赞，false 是不点赞
-		Like bool `json:"like"`
+		Id  int64 `json:"id"`
+		Cid int64 `json:"cid"`
 	}
 	var req Req
 	if err := ctx.Bind(&req); err != nil {
 		return
 	}
 	uc := ctx.MustGet("user").(UserClaims)
-	var err error
-	if req.Like {
-		// 点赞
-		err = handler.interSvc.Like(ctx, handler.biz, req.Id, uc.Uid)
-	} else {
-		// 取消点赞
-		err = handler.interSvc.CancelLike(ctx, handler.biz, req.Id, uc.Uid)
-	}
+
+	err := handler.interSvc.Collect(ctx, handler.biz, req.Id, req.Cid, uc.Uid)
 	if err != nil {
 		ctx.JSON(http.StatusOK, Result{
 			Code: 5, Msg: "系统错误",
 		})
-		handler.log.Error("点赞/取消点赞失败",
+		handler.log.Error("收藏失败",
 			logger.Error(err),
 			logger.Int64("uid", uc.Uid),
 			logger.Int64("aid", req.Id))

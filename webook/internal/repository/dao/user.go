@@ -10,7 +10,7 @@ import (
 
 var (
 	ErrUserDuplicated = errors.New("email conflict")
-	ErrUserNotFound   = gorm.ErrRecordNotFound
+	ErrRecordNotFound = gorm.ErrRecordNotFound
 )
 
 type UserDAO interface {

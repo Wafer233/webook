@@ -1,4 +1,4 @@
-package startup
+package ioc
 
 import (
 	"webook/pkg/logger"

@@ -10,6 +10,7 @@ import (
 
 type InteractiveRepository interface {
 	IncrReadCnt(ctx context.Context, biz string, bizId int64) error
+	BatchIncrReadCnt(ctx context.Context, biz []string, bizId []int64) error
 	IncrLike(ctx context.Context, biz string, aid int64, uid int64) error
 	DecrLike(ctx context.Context, biz string, aid int64, uid int64) error
 	AddCollectionItem(ctx context.Context, biz string, aid int64, cid int64, uid int64) error
@@ -27,6 +28,22 @@ type CachedInteractiveRepository struct {
 
 func NewCachedInteractiveRepository(dao dao.InteractiveDAO, l logger.LoggerV1, cache cache.InteractiveCache) InteractiveRepository {
 	return &CachedInteractiveRepository{dao: dao, cache: cache}
+}
+
+func (c *CachedInteractiveRepository) BatchIncrReadCnt(ctx context.Context, biz []string, bizId []int64) error {
+	err := c.dao.BatchIncrReadCnt(ctx, biz, bizId)
+	if err != nil {
+		return err
+	}
+	go func() {
+		for i := 0; i < len(biz); i++ {
+			er := c.cache.IncrReadCntIfPresent(ctx, biz[i], bizId[i])
+			if er != nil {
+				// 记录日志
+			}
+		}
+	}()
+	return nil
 }
 
 func (c *CachedInteractiveRepository) Get(ctx context.Context, biz string, id int64) (domain.Interactive, error) {
@@ -52,34 +69,29 @@ func (c *CachedInteractiveRepository) Get(ctx context.Context, biz string, id in
 	return intr, err
 }
 
-func (c *CachedInteractiveRepository) Liked(ctx context.Context,
-	biz string, id int64, uid int64) (bool, error) {
+func (c *CachedInteractiveRepository) Liked(ctx context.Context, biz string, id int64, uid int64) (bool, error) {
+
 	_, err := c.dao.GetLikeInfo(ctx, biz, id, uid)
 	switch err {
 	case nil:
 		return true, nil
-	case dao.ErrRecordNotFound:
-		return false, nil
 	default:
 		return false, err
 	}
 }
 
-func (c *CachedInteractiveRepository) Collected(ctx context.Context,
-	biz string, id int64, uid int64) (bool, error) {
+func (c *CachedInteractiveRepository) Collected(ctx context.Context, biz string, id int64, uid int64) (bool, error) {
+
 	_, err := c.dao.GetCollectInfo(ctx, biz, id, uid)
 	switch err {
 	case nil:
 		return true, nil
-	case dao.ErrRecordNotFound:
-		return false, nil
 	default:
 		return false, err
 	}
 }
 
-func (c *CachedInteractiveRepository) AddCollectionItem(ctx context.Context,
-	biz string, id int64, cid int64, uid int64) error {
+func (c *CachedInteractiveRepository) AddCollectionItem(ctx context.Context, biz string, id int64, cid int64, uid int64) error {
 	err := c.dao.InsertCollectionBiz(ctx, dao.UserCollectionBiz{
 		Biz:   biz,
 		BizId: id,

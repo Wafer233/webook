@@ -25,6 +25,12 @@ type RedisArticleCache struct {
 	client redis.Cmdable
 }
 
+func NewRedisArticleCache(client redis.Cmdable) ArticleCache {
+	return &RedisArticleCache{
+		client: client,
+	}
+}
+
 func (r *RedisArticleCache) GetFirstPage(ctx context.Context, uid int64) ([]domain.Article, error) {
 	key := r.firstPageKey(uid)
 	//val, err := a.client.Get(ctx, firstKey).Result()

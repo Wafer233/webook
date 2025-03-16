@@ -9,4 +9,7 @@ var Config = WebookConfig{
 	Redis: RedisConfig{
 		Addr: "localhost:16379",
 	},
+	Kafka: KafkaConfig{
+		Addr: []string{"localhost:9092"},
+	},
 }

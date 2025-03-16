@@ -24,12 +24,9 @@ const fieldCollectCnt = "collect_cnt"
 type InteractiveCache interface {
 	Get(ctx context.Context, biz string, id int64) (domain.Interactive, error)
 	Set(ctx context.Context, biz string, bizId int64, res domain.Interactive) error
-
 	IncrReadCntIfPresent(ctx context.Context, biz string, bizId int64) error
-
 	IncrLikeCntIfPresent(ctx context.Context, biz string, id int64) error
 	DecrLikeCntIfPresent(ctx context.Context, biz string, id int64) error
-
 	IncrCollectCntIfPresent(ctx context.Context, biz string, id int64) error
 }
 
@@ -41,18 +38,6 @@ func NewInteractiveRedisCache(client redis.Cmdable) InteractiveCache {
 	return &InteractiveRedisCache{
 		client: client,
 	}
-}
-
-func (i *InteractiveRedisCache) Set(ctx context.Context, biz string, bizId int64, res domain.Interactive) error {
-	key := i.key(biz, bizId)
-	err := i.client.HSet(ctx, key, fieldCollectCnt, res.CollectCnt,
-		fieldReadCnt, res.ReadCnt,
-		fieldLikeCnt, res.LikeCnt,
-	).Err()
-	if err != nil {
-		return err
-	}
-	return i.client.Expire(ctx, key, time.Minute*15).Err()
 }
 
 func (i *InteractiveRedisCache) Get(ctx context.Context, biz string, id int64) (domain.Interactive, error) {
@@ -70,6 +55,18 @@ func (i *InteractiveRedisCache) Get(ctx context.Context, biz string, id int64) (
 	intr.LikeCnt, _ = strconv.ParseInt(res[fieldLikeCnt], 10, 64)
 	intr.ReadCnt, _ = strconv.ParseInt(res[fieldReadCnt], 10, 64)
 	return intr, nil
+}
+
+func (i *InteractiveRedisCache) Set(ctx context.Context, biz string, bizId int64, res domain.Interactive) error {
+	key := i.key(biz, bizId)
+	err := i.client.HSet(ctx, key, fieldCollectCnt, res.CollectCnt,
+		fieldReadCnt, res.ReadCnt,
+		fieldLikeCnt, res.LikeCnt,
+	).Err()
+	if err != nil {
+		return err
+	}
+	return i.client.Expire(ctx, key, time.Minute*15).Err()
 }
 
 func (i *InteractiveRedisCache) IncrReadCntIfPresent(ctx context.Context, biz string, bizId int64) error {

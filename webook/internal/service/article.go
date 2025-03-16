@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"webook/internal/domain"
+	"webook/internal/event"
 	"webook/internal/repository"
 	"webook/pkg/logger"
 )
@@ -13,32 +14,25 @@ type ArticleService interface {
 	Withdraw(ctx context.Context, art domain.Article) error
 	GetByAuthor(ctx context.Context, uid int64, offset int, limit int) ([]domain.Article, error)
 	GetById(ctx context.Context, id int64) (domain.Article, error)
-	GetPubById(ctx context.Context, id int64) (domain.Article, error)
+	GetPubById(ctx context.Context, aid int64, uid int64) (domain.Article, error)
 
 	//PublishV1(ctx context.Context, art domain.Article) (int64, error)
 }
 
 type articleService struct {
 	repo repository.ArticleRepository
+	log  logger.LoggerV1
 
-	//v1
-	authRepo repository.ArticleAuthorRepository
-	readRepo repository.ArticleReaderRepository
+	producer event.Producer
 
-	log logger.LoggerV1
+	////v1
+	//authRepo repository.ArticleAuthorRepository
+	//readRepo repository.ArticleReaderRepository
 }
 
 func NewArticleService(repo repository.ArticleRepository) ArticleService {
 	return &articleService{
 		repo: repo,
-	}
-}
-
-func NewArticleServiceV1(authRepo repository.ArticleAuthorRepository, readRepo repository.ArticleReaderRepository, log logger.LoggerV1) ArticleService {
-	return &articleService{
-		authRepo: authRepo,
-		readRepo: readRepo,
-		log:      log,
 	}
 }
 
@@ -68,8 +62,26 @@ func (a *articleService) GetById(ctx context.Context, id int64) (domain.Article,
 	return a.repo.GetByID(ctx, id)
 }
 
-func (a *articleService) GetPubById(ctx context.Context, id int64) (domain.Article, error) {
-	return a.repo.GetPubById(ctx, id)
+func (a *articleService) GetPubById(ctx context.Context, aid int64, uid int64) (domain.Article, error) {
+	res, err := a.repo.GetPubById(ctx, aid)
+	go func() {
+		if err == nil {
+			// 在这里发一个消息
+			er := a.producer.ProduceReadEvent(event.ReadEvent{
+				Aid: aid,
+				Uid: uid,
+			})
+			if er != nil {
+				a.log.Error("发送 ReadEvent 失败",
+					logger.Int64("aid", aid),
+					logger.Int64("uid", uid),
+					logger.Error(err))
+			}
+		}
+	}()
+
+	return res, err
+
 }
 
 //func (a *articleService) PublishV1(ctx context.Context, art domain.Article) (int64, error) {
@@ -103,4 +115,12 @@ func (a *articleService) GetPubById(ctx context.Context, id int64) (domain.Artic
 //	}
 //
 //	return id, err
+//}
+
+//func NewArticleServiceV1(authRepo repository.ArticleAuthorRepository, readRepo repository.ArticleReaderRepository, log logger.LoggerV1) ArticleService {
+//	return &articleService{
+//		authRepo: authRepo,
+//		readRepo: readRepo,
+//		log:      log,
+//	}
 //}

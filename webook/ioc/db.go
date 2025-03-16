@@ -9,7 +9,6 @@ import (
 
 func InitDB() *gorm.DB {
 	db, err := gorm.Open(mysql.Open(config.Config.DB.DSN))
-	//db, err := gorm.Open(mysql.Open("root:root@tcp(webook-mysql:3308)/webook"))
 	if err != nil {
 		panic(err)
 	}

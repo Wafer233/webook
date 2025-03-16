@@ -12,7 +12,7 @@ import (
 )
 
 // articleHdl *web.ArticleHandler
-func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, articleHdl *web.ArticleHandler) *gin.Engine {
+func InitWeb(mdls []gin.HandlerFunc, userHdl *web.UserHandler, articleHdl *web.ArticleHandler) *gin.Engine {
 	server := gin.Default()
 	server.Use(mdls...)
 	userHdl.RegisterRoutes(server)
