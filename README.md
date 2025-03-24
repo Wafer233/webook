@@ -14,6 +14,27 @@ While the future development will mainly focus on migrating to a `microservices`
 
 ## Feature
 ### DDD
+#### monolithic
+
+    webook/
+    ├── internal/                   # Application core based on DDD principles
+    │   ├── domain/                 # Domain layer: Core business entities and logic
+    │   │   └── ...                 # User, Article, and Interactive models
+    │   ├── repository/             # Repository layer: Data access abstractions
+    │   │   ├── ...                 # Repository interfaces and implementations
+    │   │   ├── cache/              # Infrastructure: Cache implementations
+    │   │   │   └── ...
+    │   │   └── dao/                # Infrastructure: Database persistence
+    │   │       └── ...
+    │   └── service/                # Application layer: Business use cases
+    │       └── ...                 # Orchestrates domain operations
+
+#### microservices
+
+`TODO`
+
+Seperate `articles`, `users` , and `interactive` .
+
 ### RESTful APIs
 #### Source
 A resource is the data we want to work with, such as `users`, `articles`.
@@ -110,13 +131,79 @@ A middleware deal with different `front-end` and `back-end`
 
 ### Kubernetes
 
+#### Workflow
+1. Containerize application, `redis`, `MYSQL`, `webook`
+
+2. Create a deployment.yaml file to describe:
+
+3. Create a service.yaml file to expose app 
+
+4. Optional. Create pv.yaml and pvc.yaml to make Persistent Volume (database)
+
+5. Deploy Kubernetes cluster
+
+    kubectl apply -f deployment.yaml
+    kubectl apply -f service.yaml
+
 
 ### Wire
 
+#### DI (Dependency Injection)
+If there are many dependencies and the hierarchy is complex, `initialization` will become very messy!
 
-### Cache coherence
+
+#### Workflow
+1. Write wire.go
+    //go:build wireinject
+    wire.NewSet( 
+        //...
+    )
+
+    func InitFunc() {
+        wire.Build{
+            //...
+        }
+    }
+
+2. Use code `wire` in terminal
+3. Get `wire_gen.go`
 
 ### Kafka
+
+Apache Kafka is a high-performance, distributed message queue system.
+
+It’s commonly used for:
+1. Communication between microservices
+
+2. Real-time logging and event streaming
+
+3. Decoupling producers and consumers
+
+#### Workflow
+
+Introducing Kafka to decouple `InteactiveService`
+```
+// producer 
+val, err := json.Marshal(evt)
+if err != nil {
+    return err
+}
+_, _, err = s.producer.SendMessage(&sarama.ProducerMessage{
+    Topic: TopicReadEvent,
+    Value: sarama.StringEncoder(val),
+})
+return err
+```
+```
+// consumer
+
+ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+defer cancel()
+
+return i.repo.IncrReadCnt(ctx, "article", event.Aid)
+```
+
 
 
 
