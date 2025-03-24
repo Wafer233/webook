@@ -138,8 +138,6 @@ func (handler *ArticleHandler) Publish(ctx *gin.Context) {
 	if err := ctx.Bind(&req); err != nil {
 		return
 	}
-
-	//uc := ctx.MustGet("claims").(*UserClaims)
 	uc := ctx.MustGet("claims")
 	claims, ok := uc.(*UserClaims)
 	if !ok {
