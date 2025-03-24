@@ -141,9 +141,10 @@ A middleware deal with different `front-end` and `back-end`
 4. Optional. Create pv.yaml and pvc.yaml to make Persistent Volume (database)
 
 5. Deploy Kubernetes cluster
-
+```
     kubectl apply -f deployment.yaml
     kubectl apply -f service.yaml
+```
 
 
 ### Wire
